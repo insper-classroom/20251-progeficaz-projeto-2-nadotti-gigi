@@ -169,3 +169,7 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# arquivos e pastas para ignorar
+
+desktop.ini
