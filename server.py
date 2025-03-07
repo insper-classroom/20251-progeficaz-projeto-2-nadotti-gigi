@@ -1,14 +1,18 @@
 from flask import Flask, jsonify
 import mysql.connector
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
 
 db_config = {
-    'host': 'mysql-projeto2insperborabill-nadottipedro5-2430.d.aivencloud.com',  
-    'port': 11430,  
-    'user': 'avnadmin',  
-    'password': 'AVNS_1ytLtPwTE9TM-m8NhnW',  
-    'database': 'MyImoveis'
+    'host': f"{os.getenv('HOST')}",  
+    'port': os.getenv('PORT'),  
+    'user': f"{os.getenv('USER')}",  
+    'password': f"{os.getenv('PASSWORD')}",  
+    'database': f"{os.getenv('DB')}"
     }
 
 def conectando_db():
