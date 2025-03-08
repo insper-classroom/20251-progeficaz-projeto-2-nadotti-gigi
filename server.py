@@ -24,7 +24,7 @@ def conectando_db():
         return None
     
 
-@   app.route('/')
+@app.route('/')
 def index():
     conexao = conectando_db()
     if conexao:
