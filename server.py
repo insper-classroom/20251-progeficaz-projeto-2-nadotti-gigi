@@ -19,15 +19,16 @@ def conectando_db():
     connection = mysql.connector.connect(**db_config)
     return connection
     
+    
 
 @app.route('/')
 def index():
     conexao = conectando_db()
     if conexao:
-        return jsonify({'mensagem': 'Conexao bem sucedida'})
+        return jsonify({'mensagem': f'{conexao}'})
     
     else:
-        return jsonify({'erro': 'Deu B.O na conexao ein'}), 500
+        return jsonify({'erro': f'{conexao}'}), 500
     
 @app.route('/cidade', methods=['POST', 'GET'])
 def por_cidade():
@@ -39,6 +40,8 @@ def por_cidade():
     
     if cidade_selecionada:
         cursor.execute(f"SELECT * FROM MyImoveis WHERE cidade = {cidade_selecionada}")
+    else:
+        cursor.execute("SELECT * FROM MyImoveis")
 
     return jsonify({"mensagem": "bagulho"})
 
