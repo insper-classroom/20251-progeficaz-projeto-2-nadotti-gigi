@@ -1,4 +1,4 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 import mysql.connector
 import os
 from dotenv import load_dotenv
@@ -33,5 +33,18 @@ def index():
     else:
         return jsonify({'erro': 'Deu B.O na conexao ein'}), 500
     
+@app.route('/cidade', method=['POST', 'GET'])
+def por_cidade():
+    connection = conectando_db()
+    cursor = connection.cursor(dictionary=True)
+    
+
+    cidade_selecionada = request.form.get('cidade')
+    
+    if cidade_selecionada:
+        cursor.execute(f"SELECT * FROM MyImoveis WHERE cidade = {cidade_selecionada}")
+
+    return jsonify({"mensagem": "bagulho"})
+
 if __name__ =='__main__':
     app.run(debug=True)
