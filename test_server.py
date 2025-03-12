@@ -33,8 +33,8 @@ def test_por_cidade(mock_conectando_db, client):
 
     # Simulamos o retorno do banco de dados
     mock_cursor.fetchall.return_value = [
-        (1, "rua", "Um bairro ai", "Uma Cidade"),
-        (2, "rua", "Um bairro ai", "Uma Cidade"),
+        {"id": 1, "bairro": "Um bairro ai", "cidade": "Uma Cidade"},
+        {"id": 2, "bairro": "Um bairro ai", "cidade": "Uma Cidade"},
     ]
 
 
@@ -42,7 +42,7 @@ def test_por_cidade(mock_conectando_db, client):
     mock_conectando_db.return_value = mock_conn
 
     # Fazemos a requisição para a API
-    response = client.get("/alunos")
+    response = client.get("/cidade")
 
     # Verificamos se o código de status da resposta é 200 (OK)
     assert response.status_code == 200
