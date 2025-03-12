@@ -16,8 +16,9 @@ db_config = {
     }
 
 def conectando_db():
-        connection = mysql.connector.connect(**db_config)
-        return connection
+    connection = mysql.connector.connect(**db_config)
+    return connection
+    
     
 
 @app.route('/')
