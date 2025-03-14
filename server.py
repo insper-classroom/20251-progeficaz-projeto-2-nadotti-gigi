@@ -31,9 +31,6 @@ def index():
         return jsonify({'erro': f'{conexao}'}), 500
     
 @app.route('/cidade', methods=['GET'])
-
-
-
 def por_cidade():
     conn = conectando_db()
 
@@ -44,6 +41,26 @@ def por_cidade():
 
     if cidade_selecionada:
         cursor.execute("SELECT * FROM imoveis WHERE cidade = %s", (cidade_selecionada,))  
+        response = cursor.fetchall()
+        print(len(response))       
+        if len(response) > 0:  
+            return jsonify(response), 200  
+        else:
+            return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
+
+    return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 400  
+
+@app.route('/tipo', methods=['GET'])
+def por_tipo():
+    conn = conectando_db()
+
+
+    cursor = conn.cursor(dictionary=True)
+
+    tipo_selecionado = 'apartamento'
+
+    if tipo_selecionado:
+        cursor.execute("SELECT * FROM imoveis WHERE tipo = %s", (tipo_selecionado))  
         response = cursor.fetchall()
         print(len(response))       
         if len(response) > 0:  
