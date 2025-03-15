@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+from flask.sansio.scaffold import T_url_defaults
 import mysql.connector
 import os
 from dotenv import load_dotenv
@@ -70,6 +71,23 @@ def por_tipo():
 
     return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 400  
 
+app.route('/remover', methods=['GET'])
+def remover():
+    conn = conectando_db()
+
+    cursor = conn.cursor(dictionary=True)
+    id_imovel = 2
+
+    if id_imovel:
+        cursor.execute(f"DELETE FROM imoveis WHERE id = {id_imovel}")
+        conn.commit()
+        
+        if cursor.rowcount > 0:
+            print(cursor.rowcount)
+            return {"mensagem": "Imovel removido com sucesso"}
+        
+        else:
+            return {"mensagem": "Nao foi possivel remover o imovel"}
 
 
 if __name__ =='__main__':
