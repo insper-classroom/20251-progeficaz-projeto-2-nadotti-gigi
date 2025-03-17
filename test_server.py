@@ -49,16 +49,21 @@ def test_por_cidade_passa(mock_conectando_db, client):
     }
     assert response.get_json() == expected_response["filtrado"]
 
-def test_por_cidade_nao_passa(client):
+@patch('server.conectando_db')
+def test_por_cidade_nao_passa(mock_conectando_db, client):
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
 
-    with patch("server.conectando_db") as mock_get:
-        mock_get.return_value.status_code = 404
-    response = client.get("/cidade")
+    mock_conn.cursor.return_value = mock_cursor
 
+    mock_cursor.fetchall.return_value = []
+
+    mock_conectando_db.return_value = mock_conn
+
+    response = client.get('/cidade')
 
     assert response.status_code == 404
-    assert response.get_json() == {"mensagem" : "Nao foi possivel filtrar o imovel"}
-
+    assert response.get_json() == {"mensagem": "Nao foi possivel filtrar o imovel"}
 
 # criando o teste para filtrar por tipo
 @patch('server.conectando_db')
@@ -88,15 +93,21 @@ def test_por_tipo_passa(mock_conectando_db, client):
     }
     assert response.get_json() == expected_response["filtrado"]
 
-def test_por_tipo_nao_passa(client):
+@patch("server.conectando_db")
+def test_por_tipo_nao_passa(mock_conectando_db, client):
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
 
-    with patch("server.conectando_db") as mock_get:
-        mock_get.return_value.status_code = 404
+    mock_conn.cursor.return_value = mock_cursor
+
+    mock_cursor.fetchall.return_value = []
+
+    mock_conectando_db.return_value = mock_conn
+
     response = client.get("/tipo")
 
-
     assert response.status_code == 404
-    assert response.get_json() == {"mensagem" : "Nao foi possivel filtrar o imovel"}
+    assert response.get_json() == {"mensagem": "Nao foi possivel filtrar o imovel"}
 
 # fazendo o teste de remover um item do banco de dados
 @patch('server.conectando_db')
@@ -109,12 +120,13 @@ def test_remover_db_passa(mock_get, client):
     mock_cursor.rowcount = 1
 
     mock_get.return_value = mock_conn
+    mock_get.return_value.status_code = 200
 
     response = client.get('/remover')
 
     assert response.status_code == 200
 
-    assert response.get_json() == {"mensagem": "Imovel excluido com sucesso"}
+    assert response.get_json() == {"mensagem": "Imovel removido com sucesso"}
 
 @patch('server.conectando_db')
 def test_remover_db_nao_passa(mock_get, client):
@@ -126,13 +138,13 @@ def test_remover_db_nao_passa(mock_get, client):
     mock_cursor.rowcount = 0
 
     mock_get.return_value = mock_conn
-    mock_get.return_value.status_code = 400
+    mock_get.return_value.status_code = 404
 
     response = client.get('/remover')
 
-    assert response == 400
+    assert response.status_code == 404
 
-    assert response.get_json() == {"mensagem": "Nao foi possivel excluir o imovel"}
+    assert response.get_json() == {"mensagem": "Nao foi possivel remover o imovel"}
 
    
     

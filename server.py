@@ -61,7 +61,7 @@ def por_tipo():
     tipo_selecionado = 'apartamento'
 
     if tipo_selecionado:
-        cursor.execute("SELECT * FROM imoveis WHERE tipo = %s", (tipo_selecionado))  
+        cursor.execute("SELECT * FROM imoveis WHERE tipo = %s", (tipo_selecionado,))
         response = cursor.fetchall()
         print(len(response))       
         if len(response) > 0:  
@@ -69,9 +69,9 @@ def por_tipo():
         else:
             return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
 
-    return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 400  
+    return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
 
-app.route('/remover', methods=['GET'])
+@app.route('/remover', methods=['GET'])
 def remover():
     conn = conectando_db()
 
@@ -84,10 +84,10 @@ def remover():
         
         if cursor.rowcount > 0:
             print(cursor.rowcount)
-            return {"mensagem": "Imovel removido com sucesso"}
+            return {"mensagem": "Imovel removido com sucesso"}, 200
         
         else:
-            return {"mensagem": "Nao foi possivel remover o imovel"}
+            return {"mensagem": "Nao foi possivel remover o imovel"}, 404
 
 
 if __name__ =='__main__':
