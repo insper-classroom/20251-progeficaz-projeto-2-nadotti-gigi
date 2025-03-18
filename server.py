@@ -1,5 +1,4 @@
 from flask import Flask, jsonify, request
-# from flask_restful import Api
 import mysql.connector
 import os
 from dotenv import load_dotenv
@@ -45,16 +44,64 @@ def index():
     else:
         return jsonify({'erro': f'{conexao}'}), 500
     
-@app.route('/cidade', methods=['POST', 'GET'])
+@app.route('/cidade', methods=['GET'])
 def por_cidade():
     conn = conectando_db()
+
+
     cursor = conn.cursor(dictionary=True)
 
-    cidade_selecionada = request.form.get('cidade')
-    cursor.execute("SELECT * FROM imoveis WHERE cidade = %s", (cidade_selecionada,))
-    response = cursor.fetchall()
 
-    return jsonify(response), 200
+    cidade_selecionada = 'Limeira'
+
+    if cidade_selecionada:
+        cursor.execute("SELECT * FROM imoveis WHERE cidade = %s", (cidade_selecionada,))  
+        response = cursor.fetchall()
+        print(len(response))       
+        if len(response) > 0:  
+            return jsonify(response), 200  
+        else:
+            return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
+
+    return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 400  
+
+@app.route('/tipo', methods=['GET'])
+def por_tipo():
+    conn = conectando_db()
+
+
+    cursor = conn.cursor(dictionary=True)
+
+    tipo_selecionado = 'apartamento'
+
+    if tipo_selecionado:
+        cursor.execute("SELECT * FROM imoveis WHERE tipo = %s", (tipo_selecionado,))
+        response = cursor.fetchall()
+        print(len(response))       
+        if len(response) > 0:  
+            return jsonify(response), 200  
+        else:
+            return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
+
+    return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
+
+@app.route('/remover', methods=['GET'])
+def remover():
+    conn = conectando_db()
+
+    cursor = conn.cursor(dictionary=True)
+    id_imovel = 2
+
+    if id_imovel:
+        cursor.execute(f"DELETE FROM imoveis WHERE id = {id_imovel}")
+        conn.commit()
+        
+        if cursor.rowcount > 0:
+            print(cursor.rowcount)
+            return {"mensagem": "Imovel removido com sucesso"}, 200
+        
+        else:
+            return {"mensagem": "Nao foi possivel remover o imovel"}, 404
 
 if __name__ =='__main__':
     app.run(debug=True)
