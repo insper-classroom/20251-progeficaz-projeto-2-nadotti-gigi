@@ -8,12 +8,11 @@ load_dotenv(override=True)
 app = Flask(__name__)
 
 db_config = {
-    'host': f"{os.getenv('HOST')}",  
+    'host': {os.getenv('HOST')},
     'port': int(os.getenv('PORT')),  
-    'user': f"{os.getenv('USER')}",  
-    'password': f"{os.getenv('PASSWORD')}",  
-    'database': f"{os.getenv('DB')}",
-    # 'ssl_ca': 'ca.pem'
+    'user': {os.getenv('USER')},  
+    'password':{os.getenv('PASSWORD')},  
+    'database': {os.getenv('DB')},
     }
 
 def conectando_db():
@@ -21,36 +20,36 @@ def conectando_db():
         print("Tentando conectar ao banco...")
         connection = mysql.connector.connect(**db_config)
         print("Conexão bem-sucedida!")
+        return connection
     except mysql.connector.Error as err:
         print(f"Erro de MySQL: {err}")
-        sys.exit(1)
+        return None
+        # sys.exit(1)
     except Exception as e:
         print(f"Erro inesperado: {e}")
-        sys.exit(1)
+        return None
+        # sys.exit(1)
 
-    print("Se esse print aparecer, a conexão funcionou.")
+    # print("Se esse print aparecer, a conexão funcionou.")
 
-    print("conectou")
-    return connection
+    # print("conectou")
+    # return connection
     
-@app.route('/')
+@app.route('/imoveis')
 def index():
     print("oi")
     conexao = conectando_db()
     print("oi depois")
     if conexao:
         return jsonify({'mensagem': 'Conexao bem sucedida'})
-    
     else:
-        return jsonify({'erro': f'{conexao}'}), 500
+        return jsonify({'erro': 'Falha na conexão'}), 200
     
+
 @app.route('/cidade', methods=['GET'])
 def por_cidade():
     conn = conectando_db()
-
-
     cursor = conn.cursor(dictionary=True)
-
 
     cidade_selecionada = 'Limeira'
 

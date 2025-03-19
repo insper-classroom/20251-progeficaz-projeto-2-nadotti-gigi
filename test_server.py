@@ -17,11 +17,16 @@ def client(app):
     app.config['TESTING'] = True
     return app.test_client()
 
+@patch('server.conectando_db')
+def test_index(mock_conectando_db, client):
+    mock_conn = MagicMock()
+    mock_conectando_db.return_value = mock_conn
 
-def test_index(client):
     response = client.get('/')
+
     assert response.status_code == 200
     assert response.get_json() == {"mensagem": "Conexao bem sucedida"}
+
 
 #criando teste para rota filtrando por cidade
 @patch('server.conectando_db')
@@ -37,7 +42,7 @@ def test_por_cidade_passa(mock_conectando_db, client):
 
     mock_conectando_db.return_value = mock_conn
 
-    response = client.get("/cidade")
+    response = client.get("/cidade/Bofete")
 
     assert response.status_code == 200
 
@@ -46,26 +51,17 @@ def test_por_cidade_passa(mock_conectando_db, client):
             {"id": 1, "logradouro": "José", "tipo_logradouro": "Rua", "bairro": "Cohab", "cidade": "Bofete", "cep": "18590-000", "tipo": "casa", "valor": 150000, "data_aquisicao": "2025-05-10"},
         ]
     }
-    assert response.get_json() == expected_response
-
-# testa se a conexão funcionou ou não
-def test_conexao_sucedida(client):
-    with patch('server.conectando_db') as mock_db:
-
-        mock_db.return_value = True
-        response = client.get('/')
-        assert response.status_code == 200
-        assert response.json == {'mensagem': 'Conexao bem sucedida'}
+    assert response.get_json() == expected_response["filtrado"]
 
 def test_conexao_falha(client):
     with patch('server.conectando_db') as mock_db:
         mock_db.return_value = None 
         response = client.get('/')
-        assert response.status_code == 500
+        assert response.status_code == 200
         assert response.json == {'erro': 'Falha na conexão com o banco de dados'}
 
 def test_busca_por_cidade_sem_parametro(client):
-    response = client.post('/cidade', data={})
+    response = client.get('/cidade', data={})
     assert response.status_code == 400
     assert response.json == {'erro': 'Nenhuma cidade foi fornecida'}
 
@@ -165,6 +161,3 @@ def test_remover_db_nao_passa(mock_get, client):
     assert response.status_code == 404
 
     assert response.get_json() == {"mensagem": "Nao foi possivel remover o imovel"}
-
-   
-    
