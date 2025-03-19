@@ -41,14 +41,34 @@ def index():
     conexao = conectando_db()
     print("oi depois")
     if conexao:
-        return jsonify({'mensagem': 'Conexao bem sucedida'})
+        return jsonify({'mensagem': 'Conexao bem sucedida'}), 200
     else:
-        return jsonify({'erro': 'Falha na conexão'}), 200
+        return jsonify({'erro': 'Falha na conexão'}), 500
     
 
-@app.route('/cidade', methods=['GET'])
+@app.route('/imoveis/<int:id_imovel>', methods=['GET'])
+def obter_imovel(id_imovel):
+    conn = conectando_db()
+    if not conn:
+        return jsonify({'erro': 'Falha na conexão com o banco de dados'}), 500
+    
+    cursor = conn.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM imoveis WHERE id = %s", (id_imovel,))
+    imovel = cursor.fetchone()
+    
+    cursor.close()
+    conn.close()
+    
+    if imovel:
+        return jsonify(imovel), 200
+    else:
+        return jsonify({"mensagem": "Imóvel não encontrado"}), 404
+
+@app.route('/imoveis/cidade/<string:cidade>', methods=['GET'])
 def por_cidade():
     conn = conectando_db()
+    if not conn: return jsonify({'erro': 'Falha na conexão com o banco de dados'}), 500
+
     cursor = conn.cursor(dictionary=True)
 
     cidade_selecionada = 'Limeira'
@@ -64,7 +84,7 @@ def por_cidade():
 
     return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 400  
 
-@app.route('/tipo', methods=['GET'])
+@app.route('imoveis/tipo', methods=['GET'])
 def por_tipo():
     conn = conectando_db()
 
@@ -84,7 +104,53 @@ def por_tipo():
 
     return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
 
-@app.route('/remover', methods=['GET'])
+@app.route('/imoveis', methods=['POST'])
+def adicionar_imovel():
+    conn = conectando_db()
+    if not conn:
+        return jsonify({'erro': 'Falha na conexão com o banco de dados'}), 500
+    
+    dados = request.get_json()
+    
+    # Validação básica dos dados
+    campos_necessarios = ['logradouro', 'tipo_logradouro', 'bairro', 'cidade', 'cep', 'tipo', 'valor']
+    for campo in campos_necessarios:
+        if campo not in dados:
+            return jsonify({'erro': f'Campo obrigatório ausente: {campo}'}), 400
+    
+    cursor = conn.cursor()
+    
+    try:
+        query = """
+        INSERT INTO imoveis (logradouro, tipo_logradouro, bairro, cidade, cep, tipo, valor, data_aquisicao)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        valores = (
+            dados['logradouro'],
+            dados['tipo_logradouro'],
+            dados['bairro'],
+            dados['cidade'],
+            dados['cep'],
+            dados['tipo'],
+            dados['valor'],
+            dados.get('data_aquisicao')  # Campo opcional
+        )
+        
+        cursor.execute(query, valores)
+        conn.commit()
+        
+        novo_id = cursor.lastrowid
+        
+        cursor.close()
+        conn.close()
+        
+        return jsonify({"id": novo_id, "mensagem": "Imóvel adicionado com sucesso"}), 201
+    
+    except Exception as e:
+        conn.rollback()
+        return jsonify({"erro": f"Erro ao adicionar imóvel: {str(e)}"}), 500
+
+@app.route('/imovel', methods=['DELETE'])
 def remover():
     conn = conectando_db()
 
