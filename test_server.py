@@ -227,3 +227,17 @@ def test_obter_imovel_por_id_falhou(mock_conectando_db, client):
     assert response.status_code == 404
     assert response.get_json() == expected_response['imovel']
 
+@patch("servidor.connect_db")
+def test_adicionar_imovel(mock_connect_db, client):
+
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+
+    mock_conn.cursor.return_value = mock_cursor
+
+    mock_connect_db.return_value = mock_conn
+ 
+    response = client.post('/imoveis', json={"logradouro": "Miguel Damha", "tipo_logradouro": "Avenida", "bairro": "Damha", "cidade": "São José do Rio Preto", "cep": "15061-800", "tipo": "casa em condominio", "valor": 50000, "data_aquisicao": "2025-03-11"})
+
+    assert response.status_code == 200
+    assert response.get_json() == {"mensagem": "imovel adicionado com sucesso"}
