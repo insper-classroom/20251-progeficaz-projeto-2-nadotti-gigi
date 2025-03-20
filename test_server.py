@@ -227,7 +227,7 @@ def test_obter_imovel_por_id_falhou(mock_conectando_db, client):
     assert response.status_code == 404
     assert response.get_json() == expected_response['imovel']
 
-@patch("servidor.connect_db")
+@patch("server.conectando_db")
 def test_adicionar_imovel(mock_connect_db, client):
 
     mock_conn = MagicMock()

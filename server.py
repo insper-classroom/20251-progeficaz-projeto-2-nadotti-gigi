@@ -124,5 +124,20 @@ def remover():
             return {"mensagem": "Nao foi possivel remover o imovel"}, 404
 
 
+@app.route('/imoveis', methods=['POST'])
+def post_imoveis():
+    # Conecta o banco de dados
+    conn = conectando_db()
+
+    cursor = conn.cursor()
+
+    dados = request.json
+    sql = "INSERT INTO imoveis(logradouro, tipo_logradouro, bairro, cidade, cep, tipo, valor, data_aquisicao) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+    valores = dados["logradouro"], dados["tipo_logradouro"], dados["bairro"], dados["cidade"], dados["cep"], dados["tipo"], dados["valor"], dados["data_aquisicao"]
+
+    cursor.execute(sql, valores)
+    conn.commit()
+
+    return jsonify({"mensagem": "imovel adicionado com sucesso"}), 200
 if __name__ =='__main__':
     app.run(debug=True)
