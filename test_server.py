@@ -242,8 +242,8 @@ def test_adicionar_imovel(mock_connect_db, client):
     assert response.status_code == 200
     assert response.get_json() == {"mensagem": "imovel adicionado com sucesso"}
 
-@patch("servidor.conectando_db")
-def test_atualiza_imovel(mock_connect_db, imovel):
+@patch("server.conectando_db")
+def test_atualiza_imovel(mock_connect_db, client):
 
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
@@ -257,7 +257,7 @@ def test_atualiza_imovel(mock_connect_db, imovel):
 
     mock_connect_db.return_value = mock_conn
 
-    response = imovel.put("/imoveis/atualiza/1/tipo/apartamento")
+    response = client.put("/imoveis/atualiza/1/tipo/apartamento")
 
     assert response.status_code == 200
 

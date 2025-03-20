@@ -139,5 +139,41 @@ def adicionar_imovel():
     conn.commit()
 
     return jsonify({"mensagem": "imovel adicionado com sucesso"}), 200
+
+@app.route('/imoveis/atualiza/<int:id>/<string:coluna>/<string:alteracao>', methods=['PUT'])
+def atualiza_imovel(id, coluna, alteracao):
+
+    conn = conectando_db()
+
+    if conn is None:
+        response = {"erro": "Erro ao conectar ao banco de dados"}
+        return response, 500
+
+    cursor = conn.cursor()
+
+    sql= "SELECT * from imoveis.imoveis where id = %s"
+    cursor.execute(sql, (id,))
+
+    results = cursor.fetchall()
+
+    if not results:
+        response = {"erro": "Nenhum imóvel encontrado"}
+        return response, 404
+    else:
+        cursor.execute("SHOW COLUMNS FROM imoveis")
+        columns = [column[0] for column in cursor.fetchall()]
+
+        sql = f"UPDATE imoveis.imoveis SET {coluna} = %s WHERE id = %s"
+        cursor.execute(sql, (alteracao, id))
+        conn.commit()
+
+        if conn.is_connected():
+            cursor.close()
+            conn.close()
+
+        response = {'mensagem': 'Imóvel atualizado com sucesso.'}
+
+    return response, 200
+
 if __name__ =='__main__':
     app.run(debug=True)
