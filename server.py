@@ -8,11 +8,11 @@ load_dotenv(override=True)
 app = Flask(__name__)
 
 db_config = {
-    'host': {os.getenv('HOST')},
+    'host': os.getenv('HOST'),
     'port': int(os.getenv('PORT')),  
-    'user': {os.getenv('USER')},  
-    'password':{os.getenv('PASSWORD')},  
-    'database': {os.getenv('DB')},
+    'user': os.getenv('USER'),  
+    'password': os.getenv('PASSWORD'),  
+    'database': os.getenv('DB'),
     }
 
 def conectando_db():
@@ -36,18 +36,19 @@ def conectando_db():
     # return connection
     
 @app.route('/imoveis')
-def index():
-    print("oi")
+def get_imoveis():
     conexao = conectando_db()
-    print("oi depois")
     if conexao:
-        return jsonify({'mensagem': 'Conexao bem sucedida'}), 200
+        cursor = conexao.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM imoveis")
+        response = cursor.fetchall()
+        return jsonify(response), 200
     else:
         return jsonify({'erro': 'Falha na conexão'}), 500
     
 
 @app.route('/imoveis/<int:id_imovel>', methods=['GET'])
-def obter_imovel(id_imovel):
+def obter_imovel_por_id(id_imovel):
     conn = conectando_db()
     if not conn:
         return jsonify({'erro': 'Falha na conexão com o banco de dados'}), 500
@@ -62,95 +63,49 @@ def obter_imovel(id_imovel):
     if imovel:
         return jsonify(imovel), 200
     else:
-        return jsonify({"mensagem": "Imóvel não encontrado"}), 404
+        return jsonify([]), 404
+
 
 @app.route('/imoveis/cidade/<string:cidade>', methods=['GET'])
-def por_cidade():
+def por_cidade(cidade: str):
     conn = conectando_db()
     if not conn: return jsonify({'erro': 'Falha na conexão com o banco de dados'}), 500
 
     cursor = conn.cursor(dictionary=True)
 
-    cidade_selecionada = 'Limeira'
 
-    if cidade_selecionada:
-        cursor.execute("SELECT * FROM imoveis WHERE cidade = %s", (cidade_selecionada,))  
-        response = cursor.fetchall()
-        print(len(response))       
+    if cidade:
+        cursor.execute(f"SELECT * FROM imoveis WHERE cidade = '{cidade}'")  
+        response = cursor.fetchall() 
         if len(response) > 0:  
             return jsonify(response), 200  
         else:
-            return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
+            return jsonify([]), 404  
 
-    return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 400  
+    return jsonify({"mensagem": "Nao foi possivel fazer o bagulho"}), 400  
 
-@app.route('imoveis/tipo', methods=['GET'])
-def por_tipo():
+
+@app.route('/imoveis/tipo/<string:tipo>', methods=['GET'])
+def por_tipo(tipo: str):
     conn = conectando_db()
 
 
     cursor = conn.cursor(dictionary=True)
 
-    tipo_selecionado = 'apartamento'
 
-    if tipo_selecionado:
-        cursor.execute("SELECT * FROM imoveis WHERE tipo = %s", (tipo_selecionado,))
+    if tipo:
+        cursor.execute(f"SELECT * FROM imoveis WHERE tipo = {tipo}")
         response = cursor.fetchall()
         print(len(response))       
         if len(response) > 0:  
             return jsonify(response), 200  
         else:
-            return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
+            return jsonify([]), 404  
 
     return jsonify({"mensagem": "Nao foi possivel filtrar o imovel"}), 404  
 
-@app.route('/imoveis', methods=['POST'])
-def adicionar_imovel():
-    conn = conectando_db()
-    if not conn:
-        return jsonify({'erro': 'Falha na conexão com o banco de dados'}), 500
-    
-    dados = request.get_json()
-    
-    # Validação básica dos dados
-    campos_necessarios = ['logradouro', 'tipo_logradouro', 'bairro', 'cidade', 'cep', 'tipo', 'valor']
-    for campo in campos_necessarios:
-        if campo not in dados:
-            return jsonify({'erro': f'Campo obrigatório ausente: {campo}'}), 400
-    
-    cursor = conn.cursor()
-    
-    try:
-        query = """
-        INSERT INTO imoveis (logradouro, tipo_logradouro, bairro, cidade, cep, tipo, valor, data_aquisicao)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        valores = (
-            dados['logradouro'],
-            dados['tipo_logradouro'],
-            dados['bairro'],
-            dados['cidade'],
-            dados['cep'],
-            dados['tipo'],
-            dados['valor'],
-            dados.get('data_aquisicao')  # Campo opcional
-        )
-        
-        cursor.execute(query, valores)
-        conn.commit()
-        
-        novo_id = cursor.lastrowid
-        
-        cursor.close()
-        conn.close()
-        
-        return jsonify({"id": novo_id, "mensagem": "Imóvel adicionado com sucesso"}), 201
-    
-    except Exception as e:
-        conn.rollback()
-        return jsonify({"erro": f"Erro ao adicionar imóvel: {str(e)}"}), 500
 
-@app.route('/imovel', methods=['DELETE'])
+@app.route('/imoveis', methods=['DELETE'])
 def remover():
     conn = conectando_db()
 
