@@ -125,11 +125,11 @@ def remover():
 
 
 @app.route('/imoveis', methods=['POST'])
-def post_imoveis():
+def adicionar_imovel():
     # Conecta o banco de dados
     conn = conectando_db()
 
-    cursor = conn.cursor()
+    cursor = conn.cursor(dictionary=True)
 
     dados = request.json
     sql = "INSERT INTO imoveis(logradouro, tipo_logradouro, bairro, cidade, cep, tipo, valor, data_aquisicao) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
